@@ -12,14 +12,14 @@ U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ A1, /* dc=*/ 21, /
 #define _LCDML_DISP_font              u8g_font_6x13  // u8glib font (more fonts under u8g.h line 1520 ...)
 #define _LCDML_DISP_font_w            6              // font width
 #define _LCDML_DISP_font_h            13             // font height
-#define _LCDML_DISP_cursor_char       "X"            // cursor char
+#define _LCDML_DISP_cursor_char       ">"            // cursor char
 #define _LCDML_DISP_cur_space_before  2              // cursor space between
 #define _LCDML_DISP_cur_space_behind  4              // cursor space between
 #define _LCDML_DISP_box_x0            0              // start point (x0, y0)
 #define _LCDML_DISP_box_y0            0              // start point (x0, y0)
 #define _LCDML_DISP_box_x1            128            // width x  (x0 + width)
 #define _LCDML_DISP_box_y1            64             // hight y  (y0 + height)
-#define _LCDML_DISP_draw_frame        1              // draw a box around the menu
+//#define _LCDML_DISP_draw_frame        1              // draw a box around the menu
 #define _LCDML_DISP_scrollbar_w       6  // scrollbar width (if this value is < 3, the scrollbar is disabled)
 #define _LCDML_DISP_cols_max          ((_LCDML_DISP_box_x1-_LCDML_DISP_box_x0)/_LCDML_DISP_font_w)
 #define _LCDML_DISP_rows_max          ((_LCDML_DISP_box_y1-_LCDML_DISP_box_y0-((_LCDML_DISP_box_y1-_LCDML_DISP_box_y0)/_LCDML_DISP_font_h))/_LCDML_DISP_font_h)
@@ -75,6 +75,7 @@ LCDML_createMenu(_LCDML_DISP_cnt);
 void setup()
 {
 	u8g2.begin();
+  u8g2.setContrast(0);
 
 	Serial.begin(115200);                // start serial
 	Serial.println(F(_LCDML_VERSION)); // only for examples
@@ -110,17 +111,13 @@ void mFunc_information(uint8_t param)
 		} while( u8g2.nextPage() );
 	}
 
-	if(LCDML.FUNC_loop())
-	{
-		if(LCDML.BT_checkAny()) // check if any button is pressed (enter, up, down, left, right)
-		{
+	if(LCDML.FUNC_loop()){
+		if(LCDML.BT_checkAny()){ // check if any button is pressed (enter, up, down, left, right)
 			LCDML.FUNC_goBackToMenu();
 		}
 	}
 
-	if(LCDML.FUNC_close())
-	{
-		// you can here reset some global vars or do nothing
+	if(LCDML.FUNC_close()){
 	}
 }
 
@@ -129,8 +126,7 @@ unsigned long g_timer_1 = 0;    // timer variable (global variable)
 
 void mFunc_timer_info(uint8_t param)
 {
-	if(LCDML.FUNC_setup())          // ****** SETUP *********
-	{
+	if(LCDML.FUNC_setup()){
 		g_func_timer_info = 20;       // reset and set timer
 
 		char buf[20];
@@ -149,9 +145,6 @@ void mFunc_timer_info(uint8_t param)
 
 	if(LCDML.FUNC_loop())           // ****** LOOP *********
 	{
-		// loop function, can be run in a loop when LCDML_DISP_triggerMenu(xx) is set
-		// the quit button works in every DISP function without any checks; it starts the loop_end function
-
 		// reset screensaver timer
 		LCDML.SCREEN_resetTimer();
 		// this function is called every 100 milliseconds
@@ -171,18 +164,14 @@ void mFunc_timer_info(uint8_t param)
 			} while( u8g2.nextPage() );
 
 		}
-		// this function can only be ended when quit button is pressed or the time is over
-		// check if the function ends normally
-		if (g_func_timer_info <= 0)
-		{
+
+		if (g_func_timer_info <= 0){
 			// leave this function
 			LCDML.FUNC_goBackToMenu();
 		}
 	}
 
-	if(LCDML.FUNC_close())      // ****** STABLE END *********
-	{
-		// you can here reset some global vars or do nothing
+	if(LCDML.FUNC_close()) {
 	}
 }
 
@@ -203,10 +192,8 @@ void mFunc_p2(uint8_t param)
 			u8g2.drawStr( 0, (_LCDML_DISP_font_h * 1), "press a or w button");
 			u8g2.drawStr( 0, (_LCDML_DISP_font_h * 2), buf);
 		} while( u8g2.nextPage() );
-
 		// Reset Button Value
 		g_button_value = 0;
-
 		// Disable the screensaver for this function until it is closed
 		LCDML.FUNC_disableScreensaver();
 	}
@@ -254,9 +241,9 @@ void mFunc_screensaver(uint8_t param)
 		u8g2.setFont(_LCDML_DISP_font);
 		u8g2.firstPage();
 		do {
-			u8g2.drawStr( 0, (_LCDML_DISP_font_h * 1), "screensaver");
-			u8g2.drawStr( 0, (_LCDML_DISP_font_h * 2), "press any key");
-			u8g2.drawStr( 0, (_LCDML_DISP_font_h * 3), "to leave it");
+			//u8g2.drawStr( 0, (_LCDML_DISP_font_h * 1), "screensaver");
+			//u8g2.drawStr( 0, (_LCDML_DISP_font_h * 2), "press any key");
+			//u8g2.drawStr( 0, (_LCDML_DISP_font_h * 3), "to leave it");
 		} while( u8g2.nextPage() );
 
 		LCDML.FUNC_setLoopInterval(100);  // starts a trigger event for the loop function every 100 milliseconds
@@ -366,53 +353,13 @@ uint8_t g_dynParam = 100; // when this value comes from an EEPROM, load it in se
 // at the moment here is no setup function (To-Do)
 void mDyn_para(uint8_t line)
 {
-	// check if this function is active (cursor stands on this line)
-	if (line == LCDML.MENU_getCursorPos())
-	{
-		// make only an action when the cursor stands on this menu item
-		//check Button
-		if(LCDML.BT_checkAny())
-		{
-			if(LCDML.BT_checkEnter())
-			{
-				// this function checks returns the scroll disable status (0 = menu scrolling enabled, 1 = menu scrolling disabled)
-				if(LCDML.MENU_getScrollDisableStatus() == 0)
-				{
-					// disable the menu scroll function to catch the cursor on this point
-					// now it is possible to work with BT_checkUp and BT_checkDown in this function
-					// this function can only be called in a menu, not in a menu function
-					LCDML.MENU_disScroll();
-				}
-				else
-				{
-					// enable the normal menu scroll function
-					LCDML.MENU_enScroll();
-				}
-				LCDML.BT_resetEnter();
-			}
-			// This check have only an effect when MENU_disScroll is set
-			if(LCDML.BT_checkUp())
-			{
-				g_dynParam++;
-				LCDML.BT_resetUp();
-			}
-
-			// This check have only an effect when MENU_disScroll is set
-			if(LCDML.BT_checkDown())
-			{
-				g_dynParam--;
-				LCDML.BT_resetDown();
-			}
-
-
-			if(LCDML.BT_checkLeft())
-			{
+	if (line == LCDML.MENU_getCursorPos()){
+		if(LCDML.BT_checkAny()){
+			if(LCDML.BT_checkLeft()){
 				g_dynParam++;
 				LCDML.BT_resetLeft();
 			}
-
-			if(LCDML.BT_checkRight())
-			{
+			if(LCDML.BT_checkRight()){
 				g_dynParam--;
 				LCDML.BT_resetRight();
 			}
@@ -423,11 +370,9 @@ void mDyn_para(uint8_t line)
 	sprintf (buf, "dynValue: %d", g_dynParam);
 	// setup function
 	u8g2.drawStr( _LCDML_DISP_box_x0+_LCDML_DISP_font_w + _LCDML_DISP_cur_space_behind,  (_LCDML_DISP_font_h * (1+line)), buf);     // the value can be changed with left or right
-
 }
 
 boolean COND_hide()  // hide a menu element
-// *********************************************************************
 {
 	return false;  // hidden
 }
@@ -436,16 +381,9 @@ void lcdml_menu_clear()
 {
 }
 
-/* ******************************************************************** */
 void lcdml_menu_display()
-/* ******************************************************************** */
 {
-	// for first test set font here
 	u8g2.setFont(_LCDML_DISP_font);
-
-	// declaration of some variables
-	// ***************
-	// content variable
 	char content_text[_LCDML_DISP_cols];  // save the content text of every menu element
 	// menu element object
 	LCDMenuLib2_menu *tmp;
@@ -456,7 +394,6 @@ void lcdml_menu_display()
 
 	// init vars
 	uint8_t n_max             = (LCDML.MENU_getChilds() >= _LCDML_DISP_rows) ? _LCDML_DISP_rows : (LCDML.MENU_getChilds());
-
 	uint8_t scrollbar_min     = 0;
 	uint8_t scrollbar_max     = LCDML.MENU_getChilds();
 	uint8_t scrollbar_cur_pos = LCDML.MENU_getCursorPosAbs();
@@ -498,10 +435,6 @@ void lcdml_menu_display()
 		}
 		// set cursor
 		u8g2.drawStr( _LCDML_DISP_box_x0+_LCDML_DISP_cur_space_before, _LCDML_DISP_box_y0 + _LCDML_DISP_font_h * (LCDML.MENU_getCursorPos() + 1),  _LCDML_DISP_cursor_char);
-
-		if(_LCDML_DISP_draw_frame == 1) {
-			u8g2.drawFrame(_LCDML_DISP_box_x0, _LCDML_DISP_box_y0, (_LCDML_DISP_box_x1-_LCDML_DISP_box_x0), (_LCDML_DISP_box_y1-_LCDML_DISP_box_y0));
-		}
 		// display scrollbar when more content as rows available and with > 2
 		if (scrollbar_max > n_max && _LCDML_DISP_scrollbar_w > 2)
 		{
@@ -530,13 +463,13 @@ void lcdml_menu_display()
 #define g_LCDML_CONTROL_button_short_press   20   // ms
 
 Encoder ENCODER(15,33);
+Encoder ENCODER2(32,14);
 
 long  g_LCDML_CONTROL_button_press_time = 0;
 bool  g_LCDML_CONTROL_button_prev       = HIGH;
+bool  g_LCDML_CONTROL_button2_prev       = HIGH;
 
-// *********************************************************************
 void lcdml_menu_control(void)
-// *********************************************************************
 {
 	// If something must init, put in in the setup condition
 	if(LCDML.BT_setup())
@@ -546,68 +479,53 @@ void lcdml_menu_control(void)
 
 	//volatile Variable
 	long g_LCDML_CONTROL_Encoder_position = ENCODER.read();
-	bool button                           = !mcp.digitalRead(8);
+  long g_LCDML_CONTROL_Encoder_position2 = ENCODER2.read();
+	bool button                           = !mcp.digitalRead(9);
+  bool button2                          = !mcp.digitalRead(8);
 
 	if(g_LCDML_CONTROL_Encoder_position >= 3) {
-
-		if(button)
-		{
-			LCDML.BT_left();
-			g_LCDML_CONTROL_button_prev = LOW;
-			g_LCDML_CONTROL_button_press_time = -1;
-		}
-		else
-		{
-			LCDML.BT_down();
-		}
+		LCDML.BT_down();
 		ENCODER.write(g_LCDML_CONTROL_Encoder_position-4);
 	}
 	else if(g_LCDML_CONTROL_Encoder_position <= -3)
 	{
-
-		if(button)
-		{
-			LCDML.BT_right();
-			g_LCDML_CONTROL_button_prev = LOW;
-			g_LCDML_CONTROL_button_press_time = -1;
-		}
-		else
-		{
-			LCDML.BT_up();
-		}
+		LCDML.BT_up();
 		ENCODER.write(g_LCDML_CONTROL_Encoder_position+4);
+	}
+  else if(g_LCDML_CONTROL_Encoder_position2 >= 3) {
+		LCDML.BT_left();
+		ENCODER2.write(g_LCDML_CONTROL_Encoder_position2-4);
+	}
+	else if(g_LCDML_CONTROL_Encoder_position2 <= -3)
+	{
+		LCDML.BT_right();
+		ENCODER2.write(g_LCDML_CONTROL_Encoder_position2+4);
 	}
 	else
 	{
 		if(!button && g_LCDML_CONTROL_button_prev)  //falling edge, button pressed
 		{
 			g_LCDML_CONTROL_button_prev = LOW;
-			g_LCDML_CONTROL_button_press_time = millis();
 		}
 		else if(button && !g_LCDML_CONTROL_button_prev) //rising edge, button not active
 		{
 			g_LCDML_CONTROL_button_prev = HIGH;
-
-			if(g_LCDML_CONTROL_button_press_time < 0)
-			{
-				g_LCDML_CONTROL_button_press_time = millis();
-				//Reset for left right action
-			}
-			else if((millis() - g_LCDML_CONTROL_button_press_time) >= g_LCDML_CONTROL_button_long_press)
-			{
-				LCDML.BT_quit();
-			}
-			else if((millis() - g_LCDML_CONTROL_button_press_time) >= g_LCDML_CONTROL_button_short_press)
-			{
-				LCDML.BT_enter();
-			}
+			LCDML.BT_quit();
 		}
+
+    if(!button2 && g_LCDML_CONTROL_button2_prev)  //falling edge, button pressed
+    {
+      g_LCDML_CONTROL_button2_prev = LOW;
+    }
+    else if(button2 && !g_LCDML_CONTROL_button2_prev) //rising edge, button not active
+    {
+      g_LCDML_CONTROL_button2_prev = HIGH;
+      LCDML.BT_enter();
+    }
 	}
 }
 
-// *********************************************************************
 // check some errors - do not change here anything
-// *********************************************************************
 # if(_LCDML_DISP_rows > _LCDML_DISP_cfg_max_rows)
 # error change value of _LCDML_DISP_cfg_max_rows in LCDMenuLib2.h
 # endif
